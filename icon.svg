@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+   <style>
+      path {
+         stroke: #00f;
+      }
+
+      @media (prefers-color-scheme: dark) {
+         path {
+            stroke: #ff0;
+         }
+      }
+   </style>
+   <g stroke-width="30">
+      <path d="m0 0 256 256"/>
+      <path d="M256 0 0 256"/>
+      <path fill="none" d="M15 15h226v226H15z"/>
+   </g>
+</svg>

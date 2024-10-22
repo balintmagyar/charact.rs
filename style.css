@@ -1,0 +1,191 @@
+:root {
+    --unit: 1rem;
+    --border-width: 0.1rem;
+}
+
+* {
+    padding: unset;
+    margin: unset;
+    background: unset;
+    border: unset;
+    font-size: 1rem;
+    font-family: "DejaVu Sans Mono", monospace;
+    color: white;
+}
+
+html {
+    background: black;
+    background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%23555' stroke-width='10'><path d='m0 0 256 256'/><path d='M256 0 0 256'/></g></svg>");
+    background-attachment: fixed;
+    background-size: calc(3 * var(--unit));
+}
+
+h1 a {
+    font-size: calc(1.5 * var(--unit));
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    text-decoration: none;
+    z-index: 1;
+    padding: calc(0.5 * var(--unit)) var(--unit);
+    transition-delay: unset !important;
+}
+
+h1 span {
+    display: inline-block;
+    background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%23fff' stroke-width='30'><path d='m0 0 256 256'/><path d='M256 0 0 256'/><path fill='none' d='M15 15h226v226H15z'/></g></svg>");
+    background-size: contain;
+    width: calc(1.5 * var(--unit));
+    height: calc(1.5 * var(--unit));
+    color: transparent;
+    margin: 0 calc(0.1 * var(--unit)) 0 calc(0.2 * var(--unit));
+    position: relative;
+    top: calc(-0.3 * var(--unit));
+    transition-delay: unset;
+}
+
+h1:hover span {
+    display: inline-block;
+    background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%2300f' stroke-width='30'><path d='m0 0 256 256'/><path d='M256 0 0 256'/><path fill='none' d='M15 15h226v226H15z'/></g></svg>");
+}
+
+h1 a, button {
+    background: #00f;
+    color: #ff0;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    padding: calc(0.5 * var(--unit));
+    transition-delay: 0.1s;
+}
+
+h1:hover a, button:hover {
+    background: white;
+    color: #00f;
+    cursor: pointer;
+}
+
+h1:active a, button:active {
+    background: #ff0;
+    color: #00f;
+}
+
+button:after {
+    content: "";
+    display: block;
+    width: 166%;
+    height: 166%;
+    background: transparent;
+    border-radius: var(--unit);
+    position: absolute;
+}
+
+.charsContainer,
+.charContainer {
+    border-style: solid;
+    border-color: #555;
+    border-width: 0 var(--border-width) var(--border-width) 0;
+}
+
+.charContainer:hover {
+    border-color: #00f;
+    cursor: pointer;
+}
+
+.charContainer:hover .char:not(.char.tagNonPrinting),
+.charContainer:hover .codePoint {
+    color: white;
+    background: #00f;
+}
+
+.charContainer:hover .char.tagNonPrinting {
+    background-color: #00f;
+    background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%23fff' stroke-width='4'><path d='m0 0 256 256'/><path d='M256 0 0 256'/></g></svg>");
+    background-attachment: fixed;
+    background-size: calc(3 * var(--unit));
+}
+
+.charContainer:has(button:active) .char:not(.char.tagNonPrinting),
+.charContainer:has(button:active) .codePoint {
+    background-color: #ff0;
+    color: #00f;
+}
+
+.charContainer:has(button:active) .char.tagNonPrinting {
+    background-color: #ff0;
+    background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%2300f' stroke-width='4'><path d='m0 0 256 256'/><path d='M256 0 0 256'/></g></svg>");
+}
+
+.codePoint {
+    color: #999;
+    padding-bottom: calc(0.5 * var(--unit));
+    background-color: black;
+}
+
+.char {
+    font-size: 200%;
+    color: #aaa;
+    font-weight: lighter;
+    background-color: black;
+}
+
+.char.tagNonPrinting {
+    color: transparent;
+    background: transparent;
+}
+
+.charsContainer {
+    margin-bottom: calc(8 * var(--unit));
+}
+
+.charsContainer.grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.charsContainer.grid .charContainer {
+    min-width: calc(5* var(--unit));
+    max-width: calc(10* var(--unit));
+    flex-grow: 1;
+}
+
+.charsContainer.grid .char {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: calc(5 * var(--unit));
+}
+
+.charsContainer.grid .codePoint {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: calc(1.5 * var(--unit));
+    text-transform: uppercase;
+}
+
+.charsContainer.grid button {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    z-index: 1;
+}
+
+.charsContainer.grid .charContainer:hover button {
+    display: flex;
+}
+
+#footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: calc(0.5 * var(--unit)) var(--unit);
+    background: black;
+}
+
+#footer * {
+    font-size: calc(0.8 * var(--unit));
+}
