@@ -31,4 +31,4 @@ for (let i = 0; i < 128; i++) {
 };
 
 // Store the data locally
-localStorage.setItem("data", DATA);
+localStorage.setItem("data", JSON.stringify(DATA));
