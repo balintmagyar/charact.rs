@@ -30,11 +30,11 @@ DATA.REVISION = REVISION;
 DATA.CHARS = [];
 DATA.STRINGS = {
     DISPLAYFORMATS: {
-        codePoint: "U+002F",
-        htmlEntityHex: "&#x2F;",
-        htmlEntityDec: "&#47;",
-        url: "%2F",
-        urld: "%252F",
+        codePoint: "U+0000",
+        htmlEntityHex: "&#x00;",
+        htmlEntityDec: "&#0;",
+        url: "%00",
+        urld: "%2500",
     }
 }
 

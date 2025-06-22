@@ -54,7 +54,7 @@ DATA.CHARS.forEach((currentCharData, index) => {
     // Add everything to the container
     charsContainer.insertAdjacentElement("beforeend", charContainer);
 });
-appContainer.insertAdjacentElement("afterbegin", charsContainer);
+appContainer.insertAdjacentElement("beforeend", charsContainer);
 
 const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
 const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
