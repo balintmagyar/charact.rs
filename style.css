@@ -29,12 +29,6 @@ h1 {
     height: 100%;
 }
 
-h1 a {
-    font-size: calc(1.5 * var(--unit));
-    text-decoration: none;
-    height: 100%;
-}
-
 h1 span {
     display: inline-block;
     background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%23fff' stroke-width='30'><path d='m0 0 256 256'/><path d='M256 0 0 256'/><path fill='none' d='M15 15h226v226H15z'/></g></svg>");
@@ -71,6 +65,13 @@ h1:hover a, button:hover, label:hover {
 h1:active a, button:active, input:checked + label {
     background: #ff0;
     color: #00f;
+}
+
+h1 a {
+    font-size: calc(1.5 * var(--unit));
+    text-decoration: none;
+    height: 100%;
+    padding: calc(0.38 * var(--unit)) calc(0.625 * var(--unit)) calc(0.625 * var(--unit)) calc(0.5 * var(--unit)) !important;
 }
 
 header {
