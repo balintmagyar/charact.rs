@@ -4,16 +4,17 @@ const TAGS = {
     NONPRINTING: "tagNonPrinting",
 }
 
-const TOHEX = i => i.toString(16).toUpperCase();
+const TOHEX = i => i.toString(16);
 const DISPLAYFORMATTERS = {}
 
 DISPLAYFORMATTERS.raw =                 i => String.fromCodePoint(i);
-DISPLAYFORMATTERS.codePoint =           i => `U+${TOHEX(i).padStart(4, "0")}`;
-DISPLAYFORMATTERS.htmlEntityHex =       i => `&#x${TOHEX(i)};`;
+DISPLAYFORMATTERS.codePoint =           i => `U+${TOHEX(i).toUpperCase().padStart(4, "0")}`;
+DISPLAYFORMATTERS.javaScript =          i => `\\u${TOHEX(i).padStart(4, "0")}`;
+DISPLAYFORMATTERS.htmlEntityHex =       i => `&#x${TOHEX(i).toUpperCase()};`;
 DISPLAYFORMATTERS.htmlEntityDec =       i => `&#${i};`;
 DISPLAYFORMATTERS.url =                 i => {
     const out = encodeURIComponent(DISPLAYFORMATTERS.raw(i));
-    return out.length > 1 ? out : `%${TOHEX(i)}`
+    return out.length > 1 ? out : `%${TOHEX(i).toUpperCase()}`
 };
 DISPLAYFORMATTERS.urld =                i => encodeURIComponent(DISPLAYFORMATTERS.url(i));
 
@@ -31,6 +32,7 @@ DATA.CHARS = [];
 DATA.STRINGS = {
     DISPLAYFORMATS: {
         codePoint: "U+0000",
+        javaScript: "\\u0000",
         htmlEntityHex: "&#x00;",
         htmlEntityDec: "&#0;",
         url: "%00",
