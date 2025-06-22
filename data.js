@@ -1,8 +1,21 @@
-const REVISION = 1;
+const REVISION = 2;
 
 const TAGS = {
     NONPRINTING: "tagNonPrinting",
 }
+
+const TOHEX = i => i.toString(16).toUpperCase();
+const DISPLAYFORMATTERS = {}
+
+DISPLAYFORMATTERS.raw =                 i => String.fromCodePoint(i);
+DISPLAYFORMATTERS.codePoint =           i => `U+${TOHEX(i).padStart(4, "0")}`;
+DISPLAYFORMATTERS.htmlEntityHex =       i => `&#x${TOHEX(i)};`;
+DISPLAYFORMATTERS.htmlEntityDec =       i => `&#${i};`;
+DISPLAYFORMATTERS.url =                 i => {
+    const out = encodeURIComponent(DISPLAYFORMATTERS.raw(i));
+    return out.length > 1 ? out : `%${TOHEX(i)}`
+};
+DISPLAYFORMATTERS.urld =                i => encodeURIComponent(DISPLAYFORMATTERS.url(i));
 
 // Use locally stored data if the version matches
 let localData = localStorage.getItem("data");
@@ -15,16 +28,24 @@ const DATA = (() => {
 // Otherwise prepare for generating data anew
 DATA.REVISION = REVISION;
 DATA.CHARS = [];
+DATA.STRINGS = {
+    DISPLAYFORMATS: {
+        codePoint: "U+002F",
+        htmlEntityHex: "&#x2F;",
+        htmlEntityDec: "&#47;",
+        url: "%2F",
+        urld: "%252F",
+    }
+}
 
 // Generate all ASCII characters
 for (let i = 0; i < 128; i++) {
     DATA.CHARS[i] = {
-        codePoint: `U+${i.toString(16).padStart(4, "0")}`,
-        raw: String.fromCodePoint(i),
-        htmlEntityHex: `&amp;&num;x${i.toString(16)};`,
-        htmlEntityDec: `&amp;&num;${i};`,
+        displayFormats: {},
         tags: {},
     };
+
+    for (const displayFormatter in DISPLAYFORMATTERS) DATA.CHARS[i].displayFormats[displayFormatter] = DISPLAYFORMATTERS[displayFormatter](i);
 
     // Tag non-printing characters
     if (i < 32 || i == 127) DATA.CHARS[i].tags[TAGS.NONPRINTING] = true;

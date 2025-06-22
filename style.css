@@ -70,6 +70,17 @@ h1:active a, button:active {
     color: #00f;
 }
 
+fieldset#displayRadioFieldSet {
+    background: black;
+    position: absolute;
+    left: 5rem;
+    top: 5rem;
+}
+
+fieldset#displayRadioFieldSet * {
+    background: black;
+}
+
 button:after {
     content: "";
     display: block;
@@ -93,7 +104,7 @@ button:after {
 }
 
 .charContainer:hover .char:not(.char.tagNonPrinting),
-.charContainer:hover .codePoint {
+.charContainer:hover .displaylabel {
     color: white;
     background: #00f;
 }
@@ -106,7 +117,7 @@ button:after {
 }
 
 .charContainer:has(button:active) .char:not(.char.tagNonPrinting),
-.charContainer:has(button:active) .codePoint {
+.charContainer:has(button:active) .displaylabel {
     background-color: #ff0;
     color: #00f;
 }
@@ -116,7 +127,7 @@ button:after {
     background-image: url("data:image/svg+xml,<svg width='256' height='256' xmlns='http://www.w3.org/2000/svg'><g stroke='%2300f' stroke-width='4'><path d='m0 0 256 256'/><path d='M256 0 0 256'/></g></svg>");
 }
 
-.codePoint {
+.displaylabel {
     color: #999;
     padding-bottom: calc(0.5 * var(--unit));
     background-color: black;
@@ -158,12 +169,11 @@ button:after {
     height: calc(5 * var(--unit));
 }
 
-.charsContainer.grid .codePoint {
+.charsContainer.grid .displaylabel {
     display: flex;
     justify-content: center;
     width: 100%;
     height: calc(1.5 * var(--unit));
-    text-transform: uppercase;
 }
 
 .charsContainer.grid button {

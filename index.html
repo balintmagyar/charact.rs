@@ -10,15 +10,23 @@
     <meta property="og:image" content="https://charact.rs/og_image.png">
     <title>charact.rs</title>
     <script blocking="render" src="/data.js"></script>
+    <script defer src="/main.js"></script>
     <link rel="stylesheet" href="/style.css">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 </head>
 <body>
+    <template id="displayRadioInputTemplate">
+        <input type="radio" name="displays" oninput="setDisplay()" />
+        <label></label>
+    </template>
+
     <h1><a href="/">charact<span>.</span>rs</a></h1>
-    <div id="app"></div>
+    <div id="app">
+        <fieldset id="displayRadioFieldSet"></fieldset>
+    </div>
     <div id="footer"><p>charact.rs &copy; 2024&ndash; <a href="https://balintmagyar.com">Bálint Magyar</a></p></div>
-    <script src="/main.js"></script>
+
     <noscript>This page requires JavaScript to function.</noscript>
 </body>
 </html>
