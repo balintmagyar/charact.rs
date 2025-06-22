@@ -62,18 +62,13 @@ h1 a, button, label {
     padding: calc(0.5 * var(--unit));
 }
 
-input:checked + label {
-    background: #fff;
-    color: #00f;
-}
-
 h1:hover a, button:hover, label:hover {
     background: white;
     color: #00f;
     cursor: pointer;
 }
 
-h1:active a, button:active {
+h1:active a, button:active, input:checked + label {
     background: #ff0;
     color: #00f;
 }
