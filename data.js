@@ -37,6 +37,14 @@ DATA.STRINGS = {
         htmlEntityDec: "&#0;",
         url: "%00",
         urld: "%2500",
+    },
+    DISPLAYFORMATS_FRIENDLY: {
+        codePoint: "Unicode code points",
+        javaScript: "JavaScript Unicode encoding",
+        htmlEntityHex: "Hexadecimal HTML encoding",
+        htmlEntityDec: "Decimal HTML encoding",
+        url: "URL encoding",
+        urld: "Double URL encoding",
     }
 }
 
