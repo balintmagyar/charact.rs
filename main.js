@@ -18,43 +18,34 @@ function setDisplay () {
     STATE.currentDisplay = DISPLAY_SELECTED;
 }
 
-const appContainer = document.getElementById("app");
+function copyClickHandler () {
+    navigator.clipboard.writeText(document.querySelector(".charContainer:hover .displaylabel").textContent);
+}
 
-const charsContainer = document.createElement("div");
-charsContainer.classList.add("charsContainer");
-charsContainer.classList.add("grid");
+const ELEMENT_APPCONTAINER = document.getElementById("app");
 
-DATA.CHARS.forEach((currentCharData, index) => {
-    // Create elements
-    const charContainer = document.createElement("div");
-    charContainer.classList.add("charContainer");
-    charContainer.dataset.index = index;
+const ELEMENT_CHARSCONTAINER = document.createElement("div");
+ELEMENT_CHARSCONTAINER.classList.add("charsContainer");
+ELEMENT_CHARSCONTAINER.classList.add("grid");
 
-    const charDisplay   = document.createElement("div");
-    charDisplay.insertAdjacentText("beforeend", currentCharData.displayFormats.raw);
-    charDisplay.classList.add("char");
-    addCharTagClasses(charDisplay, currentCharData.tags);
+const TEMPLATE_CHARCONTAINER = document.getElementById("charContainerTemplate");
 
-    const charDisplayLabel = document.createElement("div");
-    charDisplayLabel.classList.add("displaylabel");
+DATA.CHARS.forEach((charData, i) => {
+    const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
 
-    const charActionCopy = document.createElement("button");
-    charActionCopy.insertAdjacentText("beforeend", "copy");
+    const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
+    const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
+    
+    ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
 
-    charContainer.insertAdjacentElement("beforeend", charDisplay);
-    charContainer.insertAdjacentElement("beforeend", charDisplayLabel);
-    charContainer.insertAdjacentElement("beforeend", charActionCopy);
+    ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
+    addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
 
-    // Add click to copy behavior
-    charActionCopy.setAttribute("data-success", "copied");
-    charActionCopy.addEventListener("click", () => {
-        navigator.clipboard.writeText(currentCharData.displayFormats[STATE.currentDisplay]);
-    });
+    ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
 
-    // Add everything to the container
-    charsContainer.insertAdjacentElement("beforeend", charContainer);
+    ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
 });
-appContainer.insertAdjacentElement("beforeend", charsContainer);
+ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
 
 const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
 const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
