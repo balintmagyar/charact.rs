@@ -38,6 +38,7 @@ h1 span {
     color: transparent;
     margin: 0 calc(0.1 * var(--unit)) 0 calc(0.2 * var(--unit));
     position: relative;
+    left: -0.0375rem;
 }
 
 h1:hover span {
