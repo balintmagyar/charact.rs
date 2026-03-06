@@ -162,6 +162,7 @@ button:after {
     color: #999;
     padding-bottom: calc(0.5 * var(--unit));
     background-color: black;
+    font-size: calc(0.8 * var(--unit));
 }
 
 .char {
