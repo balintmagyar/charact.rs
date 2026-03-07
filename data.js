@@ -1,4 +1,4 @@
-const REVISION = 3;
+const REVISION = 4;
 
 const TAGS = {
     NONPRINTING: "tagNonPrinting",
@@ -20,52 +20,86 @@ DISPLAYFORMATTERS.url =                     i => {
                                             };
 DISPLAYFORMATTERS.urld =                    i => encodeURIComponent(DISPLAYFORMATTERS.url(i));
 
-// Use locally stored data if the version matches
-let localData = localStorage.getItem("data");
+async function getData() {
+    let localData = localStorage.getItem("data");
 
-const DATA = (() => {
+    // Use locally stored data if the version matches
     if (localData?.REVISION == REVISION) return localData;
-    else return {};
-})();
+    // Otherwise prepare for generating data anew
+    else {
+        return fetch("/UnicodeData.txt")
+            .then(r => r.text())
+            .then(r => {
+                const ucdRaw = r;
 
-// Otherwise prepare for generating data anew
-DATA.REVISION = REVISION;
-DATA.CHARS = [];
-DATA.STRINGS = {
-    DISPLAYFORMATS: {
-        codePoint: "U+",
-        javaScriptHex: "\\x",
-        javaScriptUnicode: "\\u",
-        ES6Unicode: "\\u{",
-        htmlEntityHex: "&#x",
-        htmlEntityDec: "&#",
-        url: "%",
-        urld: "%25",
-    },
-    DISPLAYFORMATS_FRIENDLY: {
-        codePoint: "Unicode code points",
-        javaScriptHex: "Hexadecimal JavaScript encoding",
-        javaScriptUnicode: "Hexadecimal Unicode JavaScript encoding",
-        ES6Unicode: "ES6 Unicode encoding",
-        htmlEntityHex: "Hexadecimal HTML encoding",
-        htmlEntityDec: "Decimal HTML encoding",
-        url: "URL encoding",
-        urld: "Double URL encoding",
-    }
-}
+                // Parse Unicode Data
+                const ucdLines = ucdRaw.split("\n");
+                const ucdLinesSplit = [];
 
-// Generate all ASCII characters
-for (let i = 0; i < 128; i++) {
-    DATA.CHARS[i] = {
-        displayFormats: {},
-        tags: {},
+                for (const ucdLine of ucdLines) {
+                    const ucdLineSplit = ucdLine.split(";");
+                    const ucdLineCodePoint = ucdLineSplit[0];
+                    ucdLinesSplit[parseInt(ucdLineCodePoint, 16)] = ucdLineSplit;
+                }
+
+                const d = {};
+                d.REVISION = REVISION;
+                d.CHARS = [];
+                d.STRINGS = {
+                    UNDEFINED: "(undefined character)",
+                    DISPLAYFORMATS: {
+                        codePoint: "U+",
+                        javaScriptHex: "\\x",
+                        javaScriptUnicode: "\\u",
+                        ES6Unicode: "\\u{",
+                        htmlEntityHex: "&#x",
+                        htmlEntityDec: "&#",
+                        url: "%",
+                        urld: "%25",
+                    },
+                    DISPLAYFORMATS_FRIENDLY: {
+                        codePoint: "Unicode code points",
+                        javaScriptHex: "Hexadecimal JavaScript encoding",
+                        javaScriptUnicode: "Hexadecimal Unicode JavaScript encoding",
+                        ES6Unicode: "ES6 Unicode encoding",
+                        htmlEntityHex: "Hexadecimal HTML encoding",
+                        htmlEntityDec: "Decimal HTML encoding",
+                        url: "URL encoding",
+                        urld: "Double URL encoding",
+                    }
+                }
+
+                // Generate characters
+                for (let i = 0; i < 11263; i++) {
+                    d.CHARS[i] = {
+                        displayFormats: {},
+                        tags: {},
+                        ucd: ucdLinesSplit[i]
+                    };
+
+                    for (const displayFormatter in DISPLAYFORMATTERS) d.CHARS[i].displayFormats[displayFormatter] = DISPLAYFORMATTERS[displayFormatter](i);
+
+                    // Tag non-printing characters so we can apply styling
+                    if (
+                        d.CHARS[i].ucd &&
+                        (
+                            d.CHARS[i].ucd[2] === "Cc" ||
+                            d.CHARS[i].ucd[2] === "Cf" ||
+                            d.CHARS[i].ucd[2] === "Zl" ||
+                            d.CHARS[i].ucd[2] === "Zp" ||
+                            d.CHARS[i].ucd[2] === "Zs" ||
+
+                            d.CHARS[i].ucd[4] === "WS"
+                        ) ||
+                        // Also tag if not defined by Unicode
+                        !d.CHARS[i].ucd
+                    ) d.CHARS[i].tags[TAGS.NONPRINTING] = true;
+                }
+
+                // Store the data locally
+                localStorage.setItem("data", JSON.stringify(d));
+
+                return d;
+        });
     };
-
-    for (const displayFormatter in DISPLAYFORMATTERS) DATA.CHARS[i].displayFormats[displayFormatter] = DISPLAYFORMATTERS[displayFormatter](i);
-
-    // Tag non-printing characters
-    if (i < 32 || i == 127) DATA.CHARS[i].tags[TAGS.NONPRINTING] = true;
-};
-
-// Store the data locally
-localStorage.setItem("data", JSON.stringify(DATA));
+}

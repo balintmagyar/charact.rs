@@ -6,13 +6,25 @@ function addCharTagClasses (element, tags) {
     for (const tag in tags) if (Object.prototype.hasOwnProperty.call(tags, tag)) element.classList.add(tag);
 }
 
-function setDisplay () {
+function setDisplay (data) {
     const ELEMENTS_CHARCONTAINER = document.querySelectorAll(".charContainer");
     const DISPLAY_SELECTED = document.querySelector("#displayRadioFieldSet input:checked").value;
 
     ELEMENTS_CHARCONTAINER.forEach(currentCharContainer => {
-        let displayLabel = DATA.CHARS[currentCharContainer.dataset.index].displayFormats[DISPLAY_SELECTED];
-        currentCharContainer.querySelector(".displaylabel").textContent = displayLabel;
+        const charData = data.CHARS[currentCharContainer.dataset.index];
+        let displayLabel = charData.displayFormats[DISPLAY_SELECTED];
+        const ELEMENT_DISPLAYLABEL = currentCharContainer.querySelector(".displaylabel");
+        ELEMENT_DISPLAYLABEL.textContent = displayLabel;
+
+        ELEMENT_DISPLAYLABEL.title = charData.displayFormats.codePoint;
+
+        if (charData.ucd) {
+            ELEMENT_DISPLAYLABEL.title += " " + (charData.ucd[1] !== "" ? charData.ucd[1] : "");
+            ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? ` ${charData.ucd[10]}` : "";
+        } else {
+            ELEMENT_DISPLAYLABEL.title += " " + data.STRINGS.UNDEFINED;
+        }
+
     });
 
     STATE.currentDisplay = DISPLAY_SELECTED;
@@ -30,46 +42,52 @@ ELEMENT_CHARSCONTAINER.classList.add("grid");
 
 const TEMPLATE_CHARCONTAINER = document.getElementById("charContainerTemplate");
 
-DATA.CHARS.forEach((charData, i) => {
-    const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
+async function init() {
+    const DATA = await getData();
 
-    const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
-    const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
-    
-    ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
+    DATA.CHARS.forEach((charData, i) => {
+        const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
 
-    ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
-    addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
+        const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
+        const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
+        
+        ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
 
-    ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
+        ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
+        addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
 
-    ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
-});
-ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
+        ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
 
-const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
-const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
+        ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
+    });
+    ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
 
-for (const displayFormat in DATA.CHARS[0].displayFormats) {
-    if (displayFormat == "raw") continue;
+    const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
+    const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
 
-    const ELEMENT_NEWDISPLAYRADIOINPUT = TEMPLATE_DISPLAYRADIOINPUT.cloneNode(true).content;
+    for (const displayFormat in DATA.CHARS[0].displayFormats) {
+        if (displayFormat == "raw") continue;
 
-    const ELEMENT_NEWDISPLAYRADIOINPUT_INPUT = ELEMENT_NEWDISPLAYRADIOINPUT.children[0]
-    const ELEMENT_NEWDISPLAYRADIOINPUT_LABEL = ELEMENT_NEWDISPLAYRADIOINPUT.children[1]
+        const ELEMENT_NEWDISPLAYRADIOINPUT = TEMPLATE_DISPLAYRADIOINPUT.cloneNode(true).content;
 
-    ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.setAttribute("id", `${displayFormat}RadioInput`);
-    ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.value = displayFormat;
+        const ELEMENT_NEWDISPLAYRADIOINPUT_INPUT = ELEMENT_NEWDISPLAYRADIOINPUT.children[0]
+        const ELEMENT_NEWDISPLAYRADIOINPUT_LABEL = ELEMENT_NEWDISPLAYRADIOINPUT.children[1]
 
-    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("for", `${displayFormat}RadioInput`);
-    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("aria-label", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
-    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("title", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
-    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.textContent = DATA.STRINGS.DISPLAYFORMATS[displayFormat];
+        ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.setAttribute("id", `${displayFormat}RadioInput`);
+        ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.value = displayFormat;
 
-    ELEMENT_DISPLAYRADIOFIELDSET.append(ELEMENT_NEWDISPLAYRADIOINPUT);
+        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("for", `${displayFormat}RadioInput`);
+        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("aria-label", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
+        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("title", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
+        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.textContent = DATA.STRINGS.DISPLAYFORMATS[displayFormat];
+
+        ELEMENT_DISPLAYRADIOFIELDSET.append(ELEMENT_NEWDISPLAYRADIOINPUT);
+    }
+
+    const ELEMENT_DISPLAYRADIOINPUT_CHECKED = document.querySelector("#displayRadioFieldSet input:first-child");
+    ELEMENT_DISPLAYRADIOINPUT_CHECKED.setAttribute("checked", true);
+
+    setDisplay(DATA)
 }
 
-const ELEMENT_DISPLAYRADIOINPUT_CHECKED = document.querySelector("#displayRadioFieldSet input:first-child");
-ELEMENT_DISPLAYRADIOINPUT_CHECKED.setAttribute("checked", true);
-
-setDisplay();
+init();
