@@ -27,6 +27,7 @@ async function getData() {
     if (localData?.REVISION == REVISION) return localData;
     // Otherwise prepare for generating data anew
     else {
+        localStorage.removeItem("data");
         return fetch("/UnicodeData.txt")
             .then(r => r.text())
             .then(r => {
