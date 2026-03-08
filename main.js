@@ -6,12 +6,12 @@ function addCharTagClasses (element, tags) {
     for (const tag in tags) if (Object.prototype.hasOwnProperty.call(tags, tag)) element.classList.add(tag);
 }
 
-function setDisplay (data) {
+function setDisplay (chars) {
     const ELEMENTS_CHARCONTAINER = document.querySelectorAll(".charContainer");
     const DISPLAY_SELECTED = document.querySelector("#displayRadioFieldSet input:checked").value;
 
     ELEMENTS_CHARCONTAINER.forEach(currentCharContainer => {
-        const charData = data.CHARS[currentCharContainer.dataset.index];
+        const charData = chars[currentCharContainer.dataset.index];
         let displayLabel = charData.displayFormats[DISPLAY_SELECTED];
         const ELEMENT_DISPLAYLABEL = currentCharContainer.querySelector(".displaylabel");
         ELEMENT_DISPLAYLABEL.textContent = displayLabel;
@@ -22,7 +22,7 @@ function setDisplay (data) {
             ELEMENT_DISPLAYLABEL.title += " " + (charData.ucd[1] !== "" ? charData.ucd[1] : "");
             ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? ` ${charData.ucd[10]}` : "";
         } else {
-            ELEMENT_DISPLAYLABEL.title += " " + data.STRINGS.UNDEFINED;
+            ELEMENT_DISPLAYLABEL.title += " " + STRINGS.UNDEFINED;
         }
 
     });
@@ -42,52 +42,85 @@ ELEMENT_CHARSCONTAINER.classList.add("grid");
 
 const TEMPLATE_CHARCONTAINER = document.getElementById("charContainerTemplate");
 
-async function init() {
-    const DATA = await getData();
+function init(ucdRaw) {
+    const CHARS = [];
+    const dbRequest = indexedDB.open("main", REVISION);
 
-    DATA.CHARS.forEach((charData, i) => {
-        const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
+    dbRequest.onerror = (e) => console.error(`IndexedDB error: ${e.target.error?.message}`);
 
-        const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
-        const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
-        
-        ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
+    dbRequest.onupgradeneeded = (e) => {
+        const d = getData(ucdRaw);
+        const db = e.target.result;
 
-        ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
-        addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
+        if (localStorage.getItem("data")) localStorage.removeItem("data");
+        if (db.objectStoreNames.contains("chars")) db.deleteObjectStore("chars");
 
-        ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
+        const createCharsObjectStore = db.createObjectStore("chars", { keyPath: "codePointHex" });
 
-        ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
-    });
-    ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
+        createCharsObjectStore.createIndex("codePointHex", "codePointHex", { unique: true });
 
-    const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
-    const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
+        createCharsObjectStore.transaction.oncomplete = (e) => {
+            const charsObjectStore = db.transaction("chars", "readwrite").objectStore("chars");
+            d.forEach((char) => charsObjectStore.add(char));
+        };
+    };
 
-    for (const displayFormat in DATA.CHARS[0].displayFormats) {
-        if (displayFormat == "raw") continue;
+    dbRequest.onsuccess = (e) => {
+        const objectStore = e.target.result.transaction("chars").objectStore("chars");
 
-        const ELEMENT_NEWDISPLAYRADIOINPUT = TEMPLATE_DISPLAYRADIOINPUT.cloneNode(true).content;
+        objectStore.openCursor().onsuccess = (e) => {
+            const cursor = e.target.result;
 
-        const ELEMENT_NEWDISPLAYRADIOINPUT_INPUT = ELEMENT_NEWDISPLAYRADIOINPUT.children[0]
-        const ELEMENT_NEWDISPLAYRADIOINPUT_LABEL = ELEMENT_NEWDISPLAYRADIOINPUT.children[1]
+            if (cursor) {
+                CHARS[cursor.value.codePointDec] = cursor.value;
+                cursor.continue();
+            } else {
+                CHARS.forEach((charData, i) => {
+                    const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
 
-        ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.setAttribute("id", `${displayFormat}RadioInput`);
-        ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.value = displayFormat;
+                    const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
+                    const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
+                    
+                    ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
 
-        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("for", `${displayFormat}RadioInput`);
-        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("aria-label", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
-        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("title", `${DATA.STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
-        ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.textContent = DATA.STRINGS.DISPLAYFORMATS[displayFormat];
+                    ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
+                    addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
 
-        ELEMENT_DISPLAYRADIOFIELDSET.append(ELEMENT_NEWDISPLAYRADIOINPUT);
-    }
+                    ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
 
-    const ELEMENT_DISPLAYRADIOINPUT_CHECKED = document.querySelector("#displayRadioFieldSet input:first-child");
-    ELEMENT_DISPLAYRADIOINPUT_CHECKED.setAttribute("checked", true);
+                    ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
+                });
+                ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
 
-    setDisplay(DATA)
+                const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
+                const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
+
+                for (const displayFormat in CHARS[0].displayFormats) {
+                    if (displayFormat == "raw") continue;
+
+                    const ELEMENT_NEWDISPLAYRADIOINPUT = TEMPLATE_DISPLAYRADIOINPUT.cloneNode(true).content;
+
+                    const ELEMENT_NEWDISPLAYRADIOINPUT_INPUT = ELEMENT_NEWDISPLAYRADIOINPUT.children[0]
+                    const ELEMENT_NEWDISPLAYRADIOINPUT_LABEL = ELEMENT_NEWDISPLAYRADIOINPUT.children[1]
+
+                    ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.setAttribute("id", `${displayFormat}RadioInput`);
+                    ELEMENT_NEWDISPLAYRADIOINPUT_INPUT.value = displayFormat;
+
+                    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("for", `${displayFormat}RadioInput`);
+                    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("aria-label", `${STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
+                    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.setAttribute("title", `${STRINGS.DISPLAYFORMATS_FRIENDLY[displayFormat]}`);
+                    ELEMENT_NEWDISPLAYRADIOINPUT_LABEL.textContent = STRINGS.DISPLAYFORMATS[displayFormat];
+
+                    ELEMENT_DISPLAYRADIOFIELDSET.append(ELEMENT_NEWDISPLAYRADIOINPUT);
+                }
+
+                const ELEMENT_DISPLAYRADIOINPUT_CHECKED = document.querySelector("#displayRadioFieldSet input:first-child");
+                ELEMENT_DISPLAYRADIOINPUT_CHECKED.setAttribute("checked", true);
+
+                setDisplay(CHARS)
+            }
+        };
+    };
 }
 
-init();
+fetch("/UnicodeData.txt").then(r => r.text()).then(ucdRaw => init(ucdRaw));
