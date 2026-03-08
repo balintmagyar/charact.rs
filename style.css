@@ -44,6 +44,7 @@ h1 span {
     margin: 0 calc(0.1 * var(--unit)) 0 calc(0.2 * var(--unit));
     position: relative;
     left: -0.0375rem;
+    top: 0.133rem;
 }
 
 h1:hover span {
