@@ -16,7 +16,7 @@ function setDisplay(charContainer, displaySelected) {
 
     if (charData.ucd) {
         ELEMENT_DISPLAYLABEL.title += " " + (charData.ucd[1] !== "" ? charData.ucd[1] : "");
-        ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? ` ${charData.ucd[10]}` : "";
+        ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? `, ${charData.ucd[10]}` : "";
     } else {
         ELEMENT_DISPLAYLABEL.title += " " + STRINGS.UNDEFINED;
     }
