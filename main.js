@@ -6,25 +6,28 @@ function addCharTagClasses (element, tags) {
     for (const tag in tags) if (Object.prototype.hasOwnProperty.call(tags, tag)) element.classList.add(tag);
 }
 
-function setDisplay (chars) {
+function setDisplay(charContainer, displaySelected) {
+    const charData = CHARS[charContainer.dataset.index];
+    let displayLabel = charData.displayFormats[displaySelected];
+    const ELEMENT_DISPLAYLABEL = charContainer.querySelector(".displaylabel");
+    ELEMENT_DISPLAYLABEL.textContent = displayLabel;
+
+    ELEMENT_DISPLAYLABEL.title = charData.displayFormats.codePoint;
+
+    if (charData.ucd) {
+        ELEMENT_DISPLAYLABEL.title += " " + (charData.ucd[1] !== "" ? charData.ucd[1] : "");
+        ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? ` ${charData.ucd[10]}` : "";
+    } else {
+        ELEMENT_DISPLAYLABEL.title += " " + STRINGS.UNDEFINED;
+    }
+}
+
+function setAllDisplay () {
     const ELEMENTS_CHARCONTAINER = document.querySelectorAll(".charContainer");
     const DISPLAY_SELECTED = document.querySelector("#displayRadioFieldSet input:checked").value;
 
     ELEMENTS_CHARCONTAINER.forEach(currentCharContainer => {
-        const charData = chars[currentCharContainer.dataset.index];
-        let displayLabel = charData.displayFormats[DISPLAY_SELECTED];
-        const ELEMENT_DISPLAYLABEL = currentCharContainer.querySelector(".displaylabel");
-        ELEMENT_DISPLAYLABEL.textContent = displayLabel;
-
-        ELEMENT_DISPLAYLABEL.title = charData.displayFormats.codePoint;
-
-        if (charData.ucd) {
-            ELEMENT_DISPLAYLABEL.title += " " + (charData.ucd[1] !== "" ? charData.ucd[1] : "");
-            ELEMENT_DISPLAYLABEL.title += charData.ucd[10] ? ` ${charData.ucd[10]}` : "";
-        } else {
-            ELEMENT_DISPLAYLABEL.title += " " + STRINGS.UNDEFINED;
-        }
-
+        setDisplay(currentCharContainer, DISPLAY_SELECTED);
     });
 
     STATE.currentDisplay = DISPLAY_SELECTED;
@@ -42,8 +45,9 @@ ELEMENT_CHARSCONTAINER.classList.add("grid");
 
 const TEMPLATE_CHARCONTAINER = document.getElementById("charContainerTemplate");
 
+const CHARS = [];
+
 function init(ucdRaw) {
-    const CHARS = [];
     const dbRequest = indexedDB.open("main", REVISION);
 
     dbRequest.onerror = (e) => console.error(`IndexedDB error: ${e.target.error?.message}`);
@@ -75,23 +79,6 @@ function init(ucdRaw) {
                 CHARS[cursor.value.codePointDec] = cursor.value;
                 cursor.continue();
             } else {
-                CHARS.forEach((charData, i) => {
-                    const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
-
-                    const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
-                    const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
-                    
-                    ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer").dataset.index = i;
-
-                    ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
-                    addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
-
-                    ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
-
-                    ELEMENT_CHARSCONTAINER.append(ELEMENT_NEWCHARCONTAINER);
-                });
-                ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
-
                 const ELEMENT_DISPLAYRADIOFIELDSET = document.getElementById("displayRadioFieldSet");
                 const TEMPLATE_DISPLAYRADIOINPUT = document.getElementById("displayRadioInputTemplate");
 
@@ -117,7 +104,24 @@ function init(ucdRaw) {
                 const ELEMENT_DISPLAYRADIOINPUT_CHECKED = document.querySelector("#displayRadioFieldSet input:first-child");
                 ELEMENT_DISPLAYRADIOINPUT_CHECKED.setAttribute("checked", true);
 
-                setDisplay(CHARS)
+                CHARS.forEach((charData, i) => {
+                    const ELEMENT_NEWCHARCONTAINER = TEMPLATE_CHARCONTAINER.cloneNode(true).content;
+
+                    const ELEMENT_NEWCHARCONTAINER_CHAR = ELEMENT_NEWCHARCONTAINER.querySelector(".char");
+                    const ELEMENT_NEWCHARCONTAINER_BUTTON = ELEMENT_NEWCHARCONTAINER.querySelector("button");
+                    const ELEMENT_NEWCHARCONTAINER_CONTAINER = ELEMENT_NEWCHARCONTAINER.querySelector(".charContainer");
+                    
+                    ELEMENT_NEWCHARCONTAINER_CONTAINER.dataset.index = i;
+
+                    ELEMENT_NEWCHARCONTAINER_CHAR.textContent = charData.displayFormats.raw;
+                    addCharTagClasses(ELEMENT_NEWCHARCONTAINER_CHAR, charData.tags);
+
+                    ELEMENT_NEWCHARCONTAINER_BUTTON.textContent = "copy";
+                    setDisplay(ELEMENT_NEWCHARCONTAINER_CONTAINER, document.querySelector("#displayRadioFieldSet input:checked").value);
+
+                    const el = ELEMENT_CHARSCONTAINER.appendChild(ELEMENT_NEWCHARCONTAINER);
+                });
+                ELEMENT_APPCONTAINER.insertAdjacentElement("beforeend", ELEMENT_CHARSCONTAINER);
             }
         };
     };
